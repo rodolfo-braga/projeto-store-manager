@@ -61,4 +61,16 @@ products.put('/:id', rescue(async (req, res, next) => {
   return res.status(200).json(updatedProduct);
 }));
 
+products.delete('/:id', rescue(async (req, res, next) => {
+  const { id } = req.params;
+
+  const deletedProduct = await productsService.getProductById(id);
+
+  if (deletedProduct.error) return next(deletedProduct.error);
+
+  await productsService.deleteProduct(id);
+
+  return res.status(200).json(deletedProduct);
+}));
+
 module.exports = products;
