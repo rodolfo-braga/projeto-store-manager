@@ -10,6 +10,22 @@ const createProduct = async (name, quantity) => {
   return newProduct;
 };
 
+const getProducts = async () => {
+  const products = await productsModel.getProducts();
+
+  return products;
+};
+
+const getProductById = async (id) => {
+  const product = await productsModel.getProductById(id);
+
+  if (!product.length) return { error: { code: 'notFound', message: 'Product not found' } };
+
+  return product[0];
+};
+
 module.exports = {
   createProduct,
+  getProducts,
+  getProductById,
 };
