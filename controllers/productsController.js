@@ -43,4 +43,22 @@ products.get('/', rescue(async (req, res) => {
   return res.status(200).json(allProducts);
 }));
 
+products.put('/:id', rescue(async (req, res, next) => {
+  const { id } = req.params;
+
+  const product = await productsService.getProductById(id);
+
+  if (product.error) return next(product.error);
+
+  const { error } = productSchema.validate(req.body);
+
+  if (error) return next(error);
+
+  const { name, quantity } = req.body;
+
+  const updatedProduct = await productsService.updateProduct(id, name, quantity);
+
+  return res.status(200).json(updatedProduct);
+}));
+
 module.exports = products;
