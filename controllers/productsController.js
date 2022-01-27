@@ -27,4 +27,20 @@ products.post('/', rescue(async (req, res, next) => {
   return res.status(201).json(newProduct);
 }));
 
+products.get('/:id', rescue(async (req, res, next) => {
+  const { id } = req.params;
+
+  const product = await productsService.getProductById(id);
+
+  if (product.error) return next(product.error);
+
+  return res.status(200).json(product);
+}));
+
+products.get('/', rescue(async (req, res) => {
+  const allProducts = await productsService.getProducts();
+
+  return res.status(200).json(allProducts);
+}));
+
 module.exports = products;
