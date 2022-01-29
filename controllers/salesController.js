@@ -44,4 +44,20 @@ sales.get('/', rescue(async (req, res) => {
   return res.status(200).json(allSales);
 }));
 
+sales.put('/:id', rescue(async (req, res, next) => {
+  const { id: saleId } = req.params;
+  const sale = await salesService.getSaleById(saleId);
+
+  if (sale.error) return next(sale.error);
+
+  const saleInfo = req.body;
+  const { product_id: productId, quantity } = saleInfo[0];
+  const { error } = salesSchema.validate({ productId, quantity });
+  if (error) return next(error);
+
+  const updatedSale = await salesService.updateSale(saleId, saleInfo);
+
+  return res.status(200).json(updatedSale);
+}));
+
 module.exports = sales;
