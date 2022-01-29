@@ -28,4 +28,20 @@ sales.post('/', rescue(async (req, res, next) => {
   return res.status(201).json(newSale);
 }));
 
+sales.get('/:id', rescue(async (req, res, next) => {
+  const { id } = req.params;
+
+  const sale = await salesService.getSaleById(id);
+
+  if (sale.error) return next(sale.error);
+
+  return res.status(200).json(sale);
+}));
+
+sales.get('/', rescue(async (req, res) => {
+  const allSales = await salesService.getSales();
+
+  return res.status(200).json(allSales);
+}));
+
 module.exports = sales;
