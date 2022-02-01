@@ -1,0 +1,65 @@
+const sinon = require('sinon');
+const { expect } = require('chai');
+
+const productsModel = require('../../models/productsModel');
+const productsService = require('../../services/productsService');
+
+describe('Testando a manipulação de produtos (services/productsService)', () => {
+  describe('Ao cadastrar um produto (productsService.createProduct)', () => {
+    describe('Se o produto já estiver cadastrado', () => {
+      before(() => {
+        sinon.stub(productsModel, 'getProductByName').resolves([{}]);
+      });
+
+      after(() => {
+        productsModel.getProductByName.restore();
+      });
+
+      it('retorna um objeto com a chave "error"', async () => {
+        const result = await productsService.createProduct();
+        expect(result).to.have.key('error');
+      });
+
+      it('o valor dessa chave é um objeto com as propriedades "code" e "message"', async () => {
+        const result = await productsService.createProduct();
+        expect(result.error).to.have.all.keys(['code', 'message']);
+      });
+
+      it('o valor da chave "code" é "conflict"', async () => {
+        const result = await productsService.createProduct();
+        expect(result.error.code).to.equal('conflict');
+      });
+
+      it('o valor da chave "message" é "Product already exists"', async () => {
+        const result = await productsService.createProduct();
+        expect(result.error.message).to.equal('Product already exists');
+      });
+    });
+
+    describe('Se o produto não estiver cadastrado', () => {
+      before(() => {
+        sinon.stub(productsModel, 'getProductByName').resolves([]);
+        sinon.stub(productsModel, 'createProduct').resolves({
+          id: 1,
+          name: "produto_1",
+          quantity: 10,
+        });
+      });
+
+      after(() => {
+        productsModel.getProductByName.restore();
+        productsModel.createProduct.restore();
+      });
+
+      it('retorna um objeto', async () => {
+        const result = await productsService.createProduct();
+        expect(result).to.be.an('object');
+      });
+
+      it('o objeto possui as propriedades "id", "name" e "quantity"', async () => {
+        const result = await productsService.createProduct();
+        expect(result).to.have.all.keys(['id', 'name', 'quantity']);
+      });
+    });
+  });
+});
