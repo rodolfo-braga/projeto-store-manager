@@ -48,11 +48,13 @@ describe('Testando a manipulação de produtos (models/productsModel)', () => {
 
     describe('Se o produto já estiver cadastrado', () => {
       before(() => {
-        sinon.stub(connection, 'execute').resolves([[{
-          id: 1,
-          name: 'produto_1',
-          quantity: 10,
-        }]]);
+        sinon.stub(connection, 'execute').resolves([[
+          {
+            id: 1,
+            name: 'produto_1',
+            quantity: 10,
+          }
+        ]]);
       });
 
       after(() => {
@@ -75,4 +77,66 @@ describe('Testando a manipulação de produtos (models/productsModel)', () => {
       });
     });
   })
+
+  describe('Ao buscar todos os produtos (productsModel.getProducts)', () => {
+    describe('Se não existir nenhum produto cadastrado', () => {
+      before(() => {
+        sinon.stub(connection, 'execute').resolves([[]]);
+      });
+
+      after(() => {
+        connection.execute.restore();
+      });
+
+      it('retorna um array', async () => {
+        const products = await productsModel.getProducts();
+        expect(products).to.be.an('array');
+      });
+
+      it('o array está vazio', async () => {
+        const products = await productsModel.getProducts();
+        expect(products).to.be.empty;
+      });
+    });
+
+    describe('Se existir pelo menos um produto cadastrado', () => {
+      before(() => {
+        sinon.stub(connection, 'execute').resolves([[
+          {
+            id: 1,
+            name: 'produto_1',
+            quantity: 10,
+          }
+        ]]);
+      });
+
+      after(() => {
+        connection.execute.restore();
+      });
+
+      it('retorna um array', async () => {
+        const products = await productsModel.getProducts();
+        expect(products).to.be.an('array');
+      });
+
+      it('o array não está vazio', async () => {
+        const products = await productsModel.getProducts();
+        expect(products).not.to.be.empty;
+      });
+
+      it('todos os itens do array são do tipo "objeto"', async () => {
+        const products = await productsModel.getProducts();
+        products.map((item) => {
+          expect(item).to.be.an('object');
+        });
+      });
+
+      it('os itens possuem as propriedades "id", "name", "quantity"', async () => {
+        const products = await productsModel.getProducts();
+        products.map((item) => {
+          expect(item).to.have.all.keys(["id", "name", "quantity"]);
+        })
+      });
+    });
+  });
 });
