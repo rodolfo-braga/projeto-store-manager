@@ -1,5 +1,3 @@
-const sales = require('express').Router();
-const rescue = require('express-rescue');
 const Joi = require('joi');
 const salesService = require('../services/salesService');
 
@@ -13,7 +11,7 @@ const salesSchema = Joi.object({
     }),
 });
 
-sales.post('/', rescue(async (req, res, next) => {
+const registerSale = async (req, res, next) => {
   const validateInput = req.body.map(({ product_id: productId, quantity }) => {
     const { error } = salesSchema.validate({ productId, quantity });
     return error;
@@ -26,9 +24,9 @@ sales.post('/', rescue(async (req, res, next) => {
   if (newSale.error) return next(newSale.error);
 
   return res.status(201).json(newSale);
-}));
+};
 
-sales.get('/:id', rescue(async (req, res, next) => {
+const getSaleById = async (req, res, next) => {
   const { id } = req.params;
 
   const sale = await salesService.getSaleById(id);
@@ -36,15 +34,15 @@ sales.get('/:id', rescue(async (req, res, next) => {
   if (sale.error) return next(sale.error);
 
   return res.status(200).json(sale);
-}));
+};
 
-sales.get('/', rescue(async (req, res) => {
+const getSales = async (req, res) => {
   const allSales = await salesService.getSales();
 
   return res.status(200).json(allSales);
-}));
+};
 
-sales.put('/:id', rescue(async (req, res, next) => {
+const updateSale = async (req, res, next) => {
   const { id: saleId } = req.params;
   const sale = await salesService.getSaleById(saleId);
 
@@ -58,6 +56,11 @@ sales.put('/:id', rescue(async (req, res, next) => {
   const updatedSale = await salesService.updateSale(saleId, saleInfo);
 
   return res.status(200).json(updatedSale);
-}));
+};
 
-module.exports = sales;
+module.exports = {
+  registerSale,
+  getSaleById,
+  getSales,
+  updateSale,
+};

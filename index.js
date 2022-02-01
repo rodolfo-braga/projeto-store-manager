@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const productsRouter = require('./productsRouter');
-const salesController = require('./controllers/salesController');
+const salesRouter = require('./salesRouter');
 
 const errorMiddleware = require('./middlewares/error');
 
@@ -17,7 +17,7 @@ app.get('/', (_request, response) => {
 
 app.use('/products', productsRouter);
 
-app.use('/sales', salesController);
+app.use('/sales', salesRouter);
 
 app.use(errorMiddleware);
 
