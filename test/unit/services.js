@@ -116,4 +116,56 @@ describe('Testando a manipulação de produtos (services/productsService)', () =
       });
     });
   });
+
+  describe('Ao buscar um produto pelo "id"', () => {
+    describe('Se o produto não estiver cadastrado', () => {
+      before(() => {
+        sinon.stub(productsModel, 'getProductById').resolves([]);
+      });
+
+      after(() => {
+        productsModel.getProductById.restore();
+      });
+
+      it('retorna um objeto com a chave "error"', async () => {
+        const result = await productsService.getProductById();
+        expect(result).to.have.key('error');
+      });
+
+      it('o valor dessa chave é um objeto com as propriedades "code" e "message"', async () => {
+        const result = await productsService.getProductById();
+        expect(result.error).to.have.all.keys(['code', 'message']);
+      });
+
+      it('o valor da chave "code" é "notFound"', async () => {
+        const result = await productsService.getProductById();
+        expect(result.error.code).to.equal('notFound');
+      });
+
+      it('o valor da chave "message" é "Product not found"', async () => {
+        const result = await productsService.getProductById();
+        expect(result.error.message).to.equal('Product not found');
+      });
+    });
+
+    describe('Se o produto estiver cadastrado', () => {
+      before(() => {
+        sinon.stub(productsModel, 'getProductById').resolves([productMock]);
+      });
+
+      after(() => {
+        productsModel.getProductById.restore();
+      });
+
+      it('retorna um objeto', async () => {
+        const result = await productsService.getProductById();
+        expect(result).to.be.an('object');
+      });
+
+      it('o objeto possui as propriedades "id", "name" e "quantity"', async () => {
+        const result = await productsService.getProductById();
+        expect(result).to.have.all.keys(['id', 'name', 'quantity']);
+      });
+    });
+  });
 });
