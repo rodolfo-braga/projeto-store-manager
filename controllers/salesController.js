@@ -1,19 +1,10 @@
-const Joi = require('joi');
 const salesService = require('../services/salesService');
 
-const salesSchema = Joi.object({
-  productId: Joi.number().integer().required().label('product_id'),
-  quantity: Joi.number().integer().min(1).required()
-    .messages({
-      'number.base': '"quantity" must be a number larger than or equal to 1',
-      'number.integer': '"quantity" must be a number larger than or equal to 1',
-      'number.min': '"quantity" must be a number larger than or equal to 1',
-    }),
-});
+const { saleSchema } = require('../schemas');
 
 const registerSale = async (req, res, next) => {
   const validateInput = req.body.map(({ product_id: productId, quantity }) => {
-    const { error } = salesSchema.validate({ productId, quantity });
+    const { error } = saleSchema.validate({ productId, quantity });
     return error;
   });
 
@@ -50,7 +41,7 @@ const updateSale = async (req, res, next) => {
 
   const saleInfo = req.body;
   const { product_id: productId, quantity } = saleInfo[0];
-  const { error } = salesSchema.validate({ productId, quantity });
+  const { error } = saleSchema.validate({ productId, quantity });
   if (error) return next(error);
 
   const updatedSale = await salesService.updateSale(saleId, saleInfo);
