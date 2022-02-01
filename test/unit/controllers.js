@@ -4,6 +4,9 @@ const { expect } = require('chai');
 const productsController = require('../../controllers/productsController');
 const productsService = require('../../services/productsService');
 
+const salesController = require('../../controllers/salesController');
+const salesService = require('../../services/salesService');
+
 const productMock = {
   id: 1,
   name: "produto_1",
@@ -11,6 +14,15 @@ const productMock = {
 };
 const emptyArray = [];
 const arrayOfProducts = [productMock];
+const saleMock = {
+  "id": 1,
+  "itemsSold": [
+    {
+      "product_id": 1,
+      "quantity": 3
+    }
+  ]
+}
 
 describe('Testando a manipulação de produtos (controllers/productsController)', () => {
   describe('Ao cadastrar um produto (productsController.createProduct)', () => {
@@ -157,6 +169,48 @@ describe('Testando a manipulação de produtos (controllers/productsController)'
       it('é chamado o json() com um array de produtos', async () => {
         await productsController.getProducts(request, response);
         expect(response.json.calledWith(arrayOfProducts)).to.be.true;
+      });
+    });
+  });
+});
+
+describe('Testando a manipulação de vendas (controllers/calesController)', () => {
+  describe('Ao cadastrar uma venda (salesController.registerSale)', () => {
+    describe('Se o payload informado não é válido', () => {
+      const request = { body: [{}] };
+      const response = {};
+      const nextSpy = sinon.spy();
+
+      it('é chamada a função next', async () => {
+        await salesController.registerSale(request, response, nextSpy);
+        expect(nextSpy.calledOnce).to.be.true;
+      });
+    });
+
+    describe('Se o payload informado é válido', () => {
+      const request = {};
+      const response = {};
+
+      before(() => {
+        request.body = [{ product_id: 1, quantity: 10 }];
+        response.status = sinon.stub().returns(response);
+        response.json = sinon.stub().returns();
+
+        sinon.stub(salesService, 'registerSale').resolves(saleMock);
+      });
+
+      after(() => {
+        salesService.registerSale.restore();
+      });
+
+      it('é chamado o status() com o código 201', async () => {
+        await salesController.registerSale(request, response);
+        expect(response.status.calledWith(201)).to.be.true;
+      });
+
+      it('é chamado o json() com a venda cadastrada', async () => {
+        await salesController.registerSale(request, response);
+        expect(response.json.calledWith(saleMock)).to.be.true;
       });
     });
   });
