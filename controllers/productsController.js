@@ -1,6 +1,4 @@
 const Joi = require('joi');
-const products = require('express').Router();
-const rescue = require('express-rescue');
 const productsService = require('../services/productsService');
 
 const productSchema = Joi.object({
@@ -13,7 +11,7 @@ const productSchema = Joi.object({
     }),
 });
 
-products.post('/', rescue(async (req, res, next) => {
+const createProduct = async (req, res, next) => {
   const { name, quantity } = req.body;
 
   const { error } = productSchema.validate(req.body);
@@ -25,9 +23,9 @@ products.post('/', rescue(async (req, res, next) => {
   if (newProduct.error) return next(newProduct.error);
 
   return res.status(201).json(newProduct);
-}));
+};
 
-products.get('/:id', rescue(async (req, res, next) => {
+const getProductById = async (req, res, next) => {
   const { id } = req.params;
 
   const product = await productsService.getProductById(id);
@@ -35,15 +33,15 @@ products.get('/:id', rescue(async (req, res, next) => {
   if (product.error) return next(product.error);
 
   return res.status(200).json(product);
-}));
+};
 
-products.get('/', rescue(async (req, res) => {
+const getProducts = async (req, res) => {
   const allProducts = await productsService.getProducts();
 
   return res.status(200).json(allProducts);
-}));
+};
 
-products.put('/:id', rescue(async (req, res, next) => {
+const updateProduct = async (req, res, next) => {
   const { id } = req.params;
 
   const product = await productsService.getProductById(id);
@@ -59,9 +57,9 @@ products.put('/:id', rescue(async (req, res, next) => {
   const updatedProduct = await productsService.updateProduct(id, name, quantity);
 
   return res.status(200).json(updatedProduct);
-}));
+};
 
-products.delete('/:id', rescue(async (req, res, next) => {
+const deleteProduct = async (req, res, next) => {
   const { id } = req.params;
 
   const deletedProduct = await productsService.getProductById(id);
@@ -71,6 +69,12 @@ products.delete('/:id', rescue(async (req, res, next) => {
   await productsService.deleteProduct(id);
 
   return res.status(200).json(deletedProduct);
-}));
+};
 
-module.exports = products;
+module.exports = {
+  createProduct,
+  getProductById,
+  getProducts,
+  updateProduct,
+  deleteProduct,
+};

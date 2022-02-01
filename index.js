@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const app = express();
-const productsController = require('./controllers/productsController');
+const productsRouter = require('./productsRouter');
 const salesController = require('./controllers/salesController');
 
 const errorMiddleware = require('./middlewares/error');
@@ -15,7 +15,7 @@ app.get('/', (_request, response) => {
   response.send();
 });
 
-app.use('/products', productsController);
+app.use('/products', productsRouter);
 
 app.use('/sales', salesController);
 
