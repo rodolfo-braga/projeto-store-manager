@@ -117,7 +117,7 @@ describe('Testando a manipulação de produtos (services/productsService)', () =
     });
   });
 
-  describe('Ao buscar um produto pelo "id"', () => {
+  describe('Ao buscar um produto pelo "id" (productsService.getProductById)', () => {
     describe('Se o produto não estiver cadastrado', () => {
       before(() => {
         sinon.stub(productsModel, 'getProductById').resolves([]);

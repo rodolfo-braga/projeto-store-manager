@@ -42,17 +42,68 @@ describe('Testando a manipulação de produtos (controllers/productsController)'
         productsService.createProduct.restore();
       });
 
-      it('é chamado o status com o código 201', async () => {
+      it('é chamado o status() com o código 201', async () => {
         await productsController.createProduct(request, response);
         expect(response.status.calledWith(201)).to.be.true;
       });
 
-      it('é chamado o json com o produto criado', async () => {
+      it('é chamado o json() com o produto criado', async () => {
         await productsController.createProduct(request, response);
         expect(response.json.calledWith(productMock)).to.be.true;
       });
     });
   });
+
+  describe('Ao buscar um produto pelo "id" (productsController.getProductById)', () => {
+    describe('Se o produto não estiver cadastrado', () => {
+      const request = {};
+      const response = {};
+      const nextSpy = sinon.spy();
+
+      before(() => {
+        request.params = { id: 1 };
+
+        sinon.stub(productsService, 'getProductById').resolves({ error: true });
+      });
+
+      after(() => {
+        productsService.getProductById.restore();
+      });
+
+      it('é chamada a função next', async () => {
+        await productsController.getProductById(request, response, nextSpy);
+        expect(nextSpy.calledOnce).to.be.true;
+      });
+    });
+
+    describe('Se o produto estiver cadastrado', () => {
+      const request = {};
+      const response = {};
+
+      before(() => {
+        request.params = { id: 1 };
+
+        response.status = sinon.stub().returns(response);
+        response.json = sinon.stub().returns();
+
+        sinon.stub(productsService, 'getProductById').resolves(productMock);
+      });
+
+      after(() => {
+        productsService.getProductById.restore();
+      });
+
+      it('é chamado o status() com o código 200', async () => {
+        await productsController.getProductById(request, response);
+        expect(response.status.calledWith(200)).to.be.true;
+      });
+
+      it('é chamado o json() com o produto buscado', async () => {
+        await productsController.getProductById(request, response);
+        expect(response.json.calledWith(productMock)).to.be.true;
+      });
+    });
+  })
 });
 
 /*
