@@ -9,6 +9,8 @@ const productMock = {
   name: "produto_1",
   quantity: 10,
 };
+const emptyArray = [];
+const arrayOfProducts = [productMock];
 
 describe('Testando a manipulação de produtos (controllers/productsController)', () => {
   describe('Ao cadastrar um produto (productsController.createProduct)', () => {
@@ -103,7 +105,61 @@ describe('Testando a manipulação de produtos (controllers/productsController)'
         expect(response.json.calledWith(productMock)).to.be.true;
       });
     });
-  })
+  });
+
+  describe('Ao buscar todos os produtos (productsController.getProducts)', () => {
+    describe('Se não existir nenhum produto cadastrado', () => {
+      const request = {};
+      const response = {};
+
+      before(() => {
+        response.status = sinon.stub().returns(response);
+        response.json = sinon.stub().returns();
+
+        sinon.stub(productsService, 'getProducts').resolves(emptyArray);
+      });
+
+      after(() => {
+        productsService.getProducts.restore();
+      });
+
+      it('é chamado o status() com o código 200', async () => {
+        await productsController.getProducts(request, response);
+        expect(response.status.calledWith(200)).to.be.true;
+      });
+
+      it('é chamado o json() com um array vazio', async () => {
+        await productsController.getProducts(request, response);
+        expect(response.json.calledWith(emptyArray)).to.be.true;
+      });
+    });
+
+    describe('Se existir pelo menos um produto cadastrado', () => {
+      const request = {};
+      const response = {};
+
+      before(() => {
+        response.status = sinon.stub().returns(response);
+        response.json = sinon.stub().returns();
+
+        sinon.stub(productsService, 'getProducts').resolves(arrayOfProducts);
+      });
+
+      after(() => {
+        productsService.getProducts.restore();
+      });
+
+      it('é chamado o status() com o código 200', async () => {
+        await productsController.getProducts(request, response);
+        expect(response.status.calledWith(200)).to.be.true;
+      });
+
+      it('é chamado o json() com um array de produtos', async () => {
+        await productsController.getProducts(request, response);
+        expect(response.json.calledWith(arrayOfProducts)).to.be.true;
+      });
+    });
+  });
 });
 
 /*
