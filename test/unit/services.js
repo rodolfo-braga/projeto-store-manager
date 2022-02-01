@@ -4,6 +4,12 @@ const { expect } = require('chai');
 const productsModel = require('../../models/productsModel');
 const productsService = require('../../services/productsService');
 
+const productMock = {
+  id: 1,
+  name: "produto_1",
+  quantity: 10,
+};
+
 describe('Testando a manipulação de produtos (services/productsService)', () => {
   describe('Ao cadastrar um produto (productsService.createProduct)', () => {
     describe('Se o produto já estiver cadastrado', () => {
@@ -39,11 +45,7 @@ describe('Testando a manipulação de produtos (services/productsService)', () =
     describe('Se o produto não estiver cadastrado', () => {
       before(() => {
         sinon.stub(productsModel, 'getProductByName').resolves([]);
-        sinon.stub(productsModel, 'createProduct').resolves({
-          id: 1,
-          name: "produto_1",
-          quantity: 10,
-        });
+        sinon.stub(productsModel, 'createProduct').resolves(productMock);
       });
 
       after(() => {
@@ -59,6 +61,58 @@ describe('Testando a manipulação de produtos (services/productsService)', () =
       it('o objeto possui as propriedades "id", "name" e "quantity"', async () => {
         const result = await productsService.createProduct();
         expect(result).to.have.all.keys(['id', 'name', 'quantity']);
+      });
+    });
+  });
+
+  describe('Ao buscar todos os produtos (productsService.getProducts)', () => {
+    describe('Se não existir nenhum produto cadastrado', () => {
+      before(() => {
+        sinon.stub(productsModel, 'getProducts').resolves([]);
+      });
+
+      after(() => {
+        productsModel.getProducts.restore();
+      });
+
+      it('retorna um array', async () => {
+        const result = await productsService.getProducts();
+        expect(result).to.be.an('array');
+      });
+
+      it('o array está vazio', async () => {
+        const result = await productsService.getProducts();
+        expect(result).to.be.empty;
+      });
+    });
+
+    describe('Se existir pelo menos um produto cadastrado', () => {
+      before(() => {
+        sinon.stub(productsModel, 'getProducts').resolves([productMock]);
+      });
+
+      after(() => {
+        productsModel.getProducts.restore();
+      });
+
+      it('retorna um array', async () => {
+        const result = await productsService.getProducts();
+        expect(result).to.be.an('array');
+      });
+
+      it('o array não está vazio', async () => {
+        const result = await productsService.getProducts();
+        expect(result).not.to.be.empty;
+      });
+
+      it('o array possui itens do tipo "objeto"', async () => {
+        const [ item ] = await productsService.getProducts();
+        expect(item).to.be.an('object');
+      });
+
+      it('os itens possuem as propriedades "id", "name" e "quantity"', async () => {
+        const [ item ] = await productsService.getProducts();
+        expect(item).to.have.all.keys(['id', 'name', 'quantity']);
       });
     });
   });
