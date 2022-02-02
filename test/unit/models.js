@@ -4,6 +4,15 @@ const { expect } = require('chai');
 const productsModel = require('../../models/productsModel');
 const connection = require('../../models/connection');
 
+const salesModel = require('../../models/salesModel');
+
+const saleMock = [
+  {
+    product_id: 1,
+    quantity: 10,
+  }
+];
+
 describe('Testando a manipulação de produtos (models/productsModel)', () => {
   describe('Ao cadastrar um produto (productsModel.createProduct)', () => {
     before(() => {
@@ -137,6 +146,47 @@ describe('Testando a manipulação de produtos (models/productsModel)', () => {
           expect(item).to.have.all.keys(["id", "name", "quantity"]);
         })
       });
+    });
+  });
+});
+
+describe('Testando a manipulação de vendas (models/salesModel)', () => {
+  describe('Ao cadastrar uma venda (salesModel.registerSale)', () => {
+    before(() => {
+      sinon.stub(connection, 'execute').resolves([{ insertId: 1 }]);
+      sinon.stub(connection, 'query').resolves();
+    });
+
+    after(() => {
+      connection.execute.restore();
+      connection.query.restore();
+    });
+
+    it('retorna um objeto', async () => {
+      const result = await salesModel.registerSale(saleMock);
+      expect(result).to.be.an('object');
+    });
+
+    it('o objeto possui as propriedades "id" e "itemsSold"', async () => {
+      const result = await salesModel.registerSale(saleMock);
+      expect(result).to.have.all.keys(["id", "itemsSold"]);
+    });
+
+    it('"itemsSold" é um array de itens', async () => {
+      const result = await salesModel.registerSale(saleMock);
+      expect(result.itemsSold).to.be.an('array');
+    });
+
+    it('os itens do array são do tipo objeto', async () => {
+      const result = await salesModel.registerSale(saleMock);
+      const [item] = result.itemsSold;
+      expect(item).to.be.an('object');
+    });
+
+    it('os itens possuem as propriedades "product_id" e "quantity"', async () => {
+      const result = await salesModel.registerSale(saleMock);
+      const [item] = result.itemsSold;
+      expect(item).to.have.all.keys(["product_id", "quantity"]);
     });
   });
 });
