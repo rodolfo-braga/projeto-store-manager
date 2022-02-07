@@ -10,4 +10,6 @@ sales.get('/', rescue(salesController.getSales));
 
 sales.put('/:id', rescue(salesController.updateSale));
 
+sales.delete('/:id', rescue(salesController.deleteSale));
+
 module.exports = sales;
