@@ -9,6 +9,17 @@ const registerSale = async (sale) => {
     return { error: { code: 'notFound', message: 'Product not found' } };
   }
 
+  const validateQuantity = sale.map((saleProduct) => {
+    const [productOnDB] = products.find((product) => product[0].id === saleProduct.product_id);
+    return productOnDB.quantity >= saleProduct.quantity;
+  });
+
+  if (validateQuantity.some((validQuantity) => !validQuantity)) {
+    return {
+      error: { code: 'unprocessableEntity', message: 'Such amount is not permitted to sell' },
+    };
+  }
+
   const newSale = await salesModel.registerSale(sale);
 
   return newSale;
