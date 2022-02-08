@@ -4,14 +4,24 @@ const registerSale = async (sale) => {
   const [result] = await connection.execute(
     'INSERT INTO StoreManager.sales (date) VALUE (CURRENT_DATE())',
   );
-  
+
   const query = 'INSERT INTO StoreManager.sales_products (sale_id, product_id, quantity) VALUES ?';
-  
+
   const values = sale.map((product) => [result.insertId, product.product_id, product.quantity]);
 
   await connection.query(query, [values]);
 
-  return { 
+  const updateQuantityQuery = `
+    UPDATE 
+      StoreManager.products 
+    SET quantity = quantity - ?
+    WHERE id = ?`;
+
+  await Promise.all(sale.map(async (product) => {
+    await connection.execute(updateQuantityQuery, [product.quantity, product.product_id]);
+  }));
+
+  return {
     id: result.insertId,
     itemsSold: sale,
   };
@@ -46,28 +56,45 @@ const getSaleById = async (id) => {
 };
 
 const updateSale = async (saleId, saleInfo) => {
+  const [saleToBeUpdated] = await connection.execute(`
+    SELECT * FROM StoreManager.sales_products WHERE sale_id = ?`, [saleId]);
+
+  await Promise.all(saleToBeUpdated.map((async (product) => {
+    await connection.execute(`
+      UPDATE StoreManager.products SET quantity = quantity + ? WHERE id = ?`,
+      [product.quantity, product.product_id]);
+  })));
+
   const { product_id: productId, quantity: newQuantity } = saleInfo[0];
-  const query = `
-    UPDATE
-      StoreManager.sales_products
-    SET product_id = ?, quantity = ?
-    WHERE sale_id = ?`;
+  await connection.execute(`
+    UPDATE StoreManager.sales_products SET product_id = ?, quantity = ? WHERE sale_id = ?`,
+    [productId, newQuantity, saleId]);
 
-  await connection.execute(query, [productId, newQuantity, saleId]);
+  await Promise.all(saleInfo.map(async (product) => {
+    await connection.execute(`
+      UPDATE StoreManager.products SET quantity = quantity - ? WHERE id = ?`,
+      [product.quantity, product.product_id]);
+  }));
 
-  return {
-    saleId,
-    itemUpdated: saleInfo,
-  };
+  return { saleId, itemUpdated: saleInfo };
 };
 
 const deleteSale = async (id) => {
   const deletedSale = await getSaleById(id);
 
-  const query = 'DELETE FROM StoreManager.sales_products WHERE sale_id = ?';
-  
-  await connection.execute(query, [id]);
-  
+  await connection.execute('DELETE FROM StoreManager.sales_products WHERE sale_id = ?', [id]);
+  await connection.execute('DELETE FROM StoreManager.sales WHERE id = ?', [id]);
+
+  const updateQuantityQuery = `
+    UPDATE 
+      StoreManager.products 
+    SET quantity = quantity + ?
+    WHERE id = ?`;
+
+  await Promise.all(deletedSale.map(async (product) => {
+    await connection.execute(updateQuantityQuery, [product.quantity, product.product_id]);
+  }));
+
   return deletedSale;
 };
 
