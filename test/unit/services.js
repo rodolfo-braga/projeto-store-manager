@@ -224,7 +224,7 @@ describe('Testando a manipulação de vendas (services/salesService)', () => {
 
     describe('Se a venda for cadastrada corretamente', () => {
       before(() => {
-        sinon.stub(productsModel, 'getProductById').resolves([{}]);
+        sinon.stub(productsModel, 'getProductById').resolves([productMock]);
         sinon.stub(salesModel, 'registerSale').resolves(saleRegisteredMock);
       });
 
